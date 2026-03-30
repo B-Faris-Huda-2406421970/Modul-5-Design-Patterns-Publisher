@@ -85,4 +85,14 @@ This is the place for you to write reflections:
 
 #### Reflection Publisher-2
 
+1. Pemisahan service, repository, dan model berguna agar scalability dari aplikasi tersebut bagus. Jika seluruh service dan repository diletakkan dalam model, maka akan terjadi file model yang besar. Ini berlawanan dengan prinsip Separation of Concerns (SoC) dan Single Responsibility Principle (SRP). Dengan memisahkan service dan repository, kode menjadi lebih mudah diuji (testable), rapi, dan fleksibel terhadap perubahan.
+
+2. Jika semua logika bisnis digabungkan ke dalam Model, maka aplikasi akan mengalami tight coupling. Misalkan kita ingin meng-update harga suatu produk. Saat suatu produk di-update harganya, produk tersebut harus memberitahu para subscriber-nya. Jika seluruh logika ada di dalam Model, maka pada Product.rs akan ada bagian kode yang memanggil database subscriber, memproses pengiriman notifikasi, dan menangani error. Akibatnya, Model Product harus tahu detail terkait Subscriber dan Notification, yang menyebabkan tidak ada abstraksi diantara mereka sehingga tidak fleksibel jika ada perubahan yang akan dilakukan nantinya. Akibat lainnya adalah akan sulit dilakukan unit testing pada Model tersebut.
+
+3. Ya, saya pernah menggunakan Postman untuk tes apakah API yang saya buat menerima data dengan benar. Fitur-fitur Postman yang menurut saya berguna untuk Group Project atau proyek-proyek lainnya adalah:
+- Collections: Mengelompokkan semua endpoint (misal Create, List, Update, Delete) ke dalam satu folder sehingga tim bisa berbagi dokumentasi API yang sama.
+- Environments: Pindah antara localhost (untuk development) dan URL pada production dengan satu klik tanpa perlu mengubah URL secara manual.
+- Tests (Assertions): Kita bisa menulis script otomasi dalam JavaScript untuk memastikan API yang dibuat return status 200 OK atau data yang sesuai
+- Pre-request Scripts: Scripts untuk melakukan aksi sebelum request dikirim, contohnya adalah melakukan autentikasi.
+
 #### Reflection Publisher-3
