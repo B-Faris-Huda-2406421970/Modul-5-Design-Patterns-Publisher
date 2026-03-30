@@ -77,6 +77,11 @@ This is the place for you to write reflections:
 ### Mandatory (Publisher) Reflections
 
 #### Reflection Publisher-1
+1. Pada requirements, semua Subscriber memiliki perilaku yang identik yaitu menerima notifikasi menggunakan mekanisme URL. Oleh karena itu, sebaiknya kita menggunakan struct karena tidak ada variasi perilaku (behaviour) Subscriber. Jika memang ada perilaku yang berbeda, misal ada subscriber yang menerima notifikasi dari URL, ada juga yang dari Email, maka Subscriber sebaiknya dibuat menggunkanan trait (interface) agar tidak terikat pada tipe data tertentu. Hal ini bertujuan untuk memenuhi salah satu SOLID principles yaitu Dependency Inversion (DI).
+
+2. id pada Program dan url pada Subscriber harus bersifat unik. Jika kita menggunakan Vec, maka kita perlu melakukan linear search untuk memastikan id dan url yang kita tambahkan unik. Kompleksitas dari linear search sendiri O(n) sehingga akan memakan waktu jika ada banyak id atau url. Oleh karena itu, kita menggunakan DashMap yang bisa mencari id dan url dalam rata-rata O(1). Ini akan mempercepat kita dalam mencari apakah id atau url sudah ada atau belum.
+
+3. Singleton digunakan untuk memastikan hanya ada satu instance dari Subscriber di seluruh aplikasi. DashMap adalah implementasi Hash Map dari crate (library) Rust yang aman untuk akses bersamaan (concurrent). Singleton hanya menjamin kita punya satu instance Subscriber, tetapi tidak menjamin objek tersebut bisa diakses secara bersamaan dengan aman. Oleh karena itu, ita perlu DashMap agar bisa melakukan konkurensi.
 
 #### Reflection Publisher-2
 
