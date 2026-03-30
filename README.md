@@ -67,7 +67,7 @@ You can install Postman via this website: https://www.postman.com/downloads/
 -   **STAGE 3: Implement notification mechanism**
     -   [ ] Commit: `Implement update method in Subscriber model to send notification HTTP requests.`
     -   [ ] Commit: `Implement notify function in Notification service to notify each Subscriber.`
-    -   [ ] Commit: `Implement publish function in Program service and Program controller.`
+    -   [ ] Commit: `Implement publish function in Product service and Product controller.`
     -   [ ] Commit: `Edit Product service methods to call notify after create/delete.`
     -   [ ] Write answers of your learning module's "Reflection Publisher-3" questions in this README.
 
@@ -77,7 +77,37 @@ This is the place for you to write reflections:
 ### Mandatory (Publisher) Reflections
 
 #### Reflection Publisher-1
+1. Pada requirements, semua Subscriber memiliki perilaku yang identik yaitu menerima notifikasi menggunakan mekanisme URL. Oleh karena itu, sebaiknya kita menggunakan struct karena tidak ada variasi perilaku (behaviour) Subscriber. Jika memang ada perilaku yang berbeda, misal ada subscriber yang menerima notifikasi dari URL, ada juga yang dari Email, maka Subscriber sebaiknya dibuat menggunkanan trait (interface) agar tidak terikat pada tipe data tertentu. Hal ini bertujuan untuk memenuhi salah satu SOLID principles yaitu Dependency Inversion (DI).
+
+2. id pada Product dan url pada Subscriber harus bersifat unik. Jika kita menggunakan Vec, maka kita perlu melakukan linear search untuk memastikan id dan url yang kita tambahkan unik. Kompleksitas dari linear search sendiri O(n) sehingga akan memakan waktu jika ada banyak id atau url. Oleh karena itu, kita menggunakan DashMap yang bisa mencari id dan url dalam rata-rata O(1). Ini akan mempercepat kita dalam mencari apakah id atau url sudah ada atau belum.
+
+3. Singleton digunakan untuk memastikan hanya ada satu instance dari Subscriber di seluruh aplikasi. DashMap adalah implementasi Hash Map dari crate (library) Rust yang aman untuk akses bersamaan (concurrent). Singleton hanya menjamin kita punya satu instance Subscriber, tetapi tidak menjamin objek tersebut bisa diakses secara bersamaan dengan aman. Oleh karena itu, ita perlu DashMap agar bisa melakukan konkurensi.
 
 #### Reflection Publisher-2
 
+1. Pemisahan service, repository, dan model berguna agar scalability dari aplikasi tersebut bagus. Jika seluruh service dan repository diletakkan dalam model, maka akan terjadi file model yang besar. Ini berlawanan dengan prinsip Separation of Concerns (SoC) dan Single Responsibility Principle (SRP). Dengan memisahkan service dan repository, kode menjadi lebih mudah diuji (testable), rapi, dan fleksibel terhadap perubahan.
+
+2. Jika semua logika bisnis digabungkan ke dalam Model, maka aplikasi akan mengalami tight coupling. Misalkan kita ingin meng-update harga suatu produk. Saat suatu produk di-update harganya, produk tersebut harus memberitahu para subscriber-nya. Jika seluruh logika ada di dalam Model, maka pada Product.rs akan ada bagian kode yang memanggil database subscriber, memproses pengiriman notifikasi, dan menangani error. Akibatnya, Model Product harus tahu detail terkait Subscriber dan Notification, yang menyebabkan tidak ada abstraksi diantara mereka sehingga tidak fleksibel jika ada perubahan yang akan dilakukan nantinya. Akibat lainnya adalah akan sulit dilakukan unit testing pada Model tersebut.
+
+3. Ya, saya pernah menggunakan Postman untuk tes apakah API yang saya buat menerima data dengan benar. Fitur-fitur Postman yang menurut saya berguna untuk Group Project atau proyek-proyek lainnya adalah:
+- Collections: Mengelompokkan semua endpoint (misal Create, List, Update, Delete) ke dalam satu folder sehingga tim bisa berbagi dokumentasi API yang sama.
+- Environments: Pindah antara localhost (untuk development) dan URL pada production dengan satu klik tanpa perlu mengubah URL secara manual.
+- Tests (Assertions): Kita bisa menulis script otomasi dalam JavaScript untuk memastikan API yang dibuat return status 200 OK atau data yang sesuai
+- Pre-request Scripts: Scripts untuk melakukan aksi sebelum request dikirim, contohnya adalah melakukan autentikasi.
+
 #### Reflection Publisher-3
+
+1. Pada tutorial ini, kita menggunakan Push model. Di `NotificationService::notify`, Publishr menyiapkan payload yang berisi detail data notifikasi seperti judul produk, tipe, status. Kemudian, data ini di-push ke setiap Subscriber melalui argumen pada method `update(payload_clone)`. Subscriber tidak perlu bertanya balik data apa yang berubah (Pull) karena kita sudah memberikan datanya secara lengkap.
+
+2. Kelebihan Pull model:
+- Jika data produk sangat besar, Subscriber hanya akan mengambil bagian yang mereka butuhkan saja
+- Subscriber bisa menentukan kapan waktu yang tepat untuk menarik data tersebut
+
+Kekurangan Pull model:
+- Saat akan mem-publish suatu produk, Publisher perlu memberi tahu ada perubahan. Setelah itu, Subscriber perlu memanggil API Publisher untuk mengambil data. Akibatnya, akan terjadi dua kali komunikasi sehingga boros bandwidth dan menambah latensi pada jaringan
+- Subscriber harus tahu alamat atau cara mengakses Publisher untuk menarik data tersebut sehingga kedua sistem lebih terikat (Tight Coupling)
+
+3. Jika kita tidak menggunakan multi-threading (`thread::spawn`) dan menjalankan proses notifikasi secara beurutan (synchronous), program akan mengalami:
+- Response time yang lambat akibat perlu menunggu seluruh notifikasi selesai dikirim ke semua subscriber
+- Karena hanya ada satu thread, maka akan terjadi blocking. Jika ada banyak subscriber, maka user perlu menunggu semua produk dikirim notifikasi ke semua subscriber
+- Jika ada salah satu server subscriber yang down, maka bisa saja aplikasi akan mengalami timeout.
