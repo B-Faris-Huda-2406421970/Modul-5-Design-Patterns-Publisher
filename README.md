@@ -97,7 +97,7 @@ This is the place for you to write reflections:
 
 #### Reflection Publisher-3
 
-1. Pada tutorial ini, kita menggunakan Push model. Di `NotificationService::notify`, Publishr menyiapkan payload yang berisi detail data notifikasi seperti judul produk, tipe, status. Kemudian, data ini di-push ke setiap Subscriber melalui argumen pada method `update(payload_clone)`. Subscriber tidak perlu bertanya balik data apa yang berubah (Pull) karena kita sudah memberikan datanya secara lengkap.
+1. Pada tutorial ini, kita menggunakan Push model. Di `NotificationService::notify`, Publisher menyiapkan payload yang berisi detail data notifikasi seperti judul produk, tipe, status. Kemudian, data ini di-push ke setiap Subscriber melalui argumen pada method `update(payload_clone)`. Subscriber tidak perlu bertanya balik data apa yang berubah (Pull) karena kita sudah memberikan datanya secara lengkap.
 
 2. Kelebihan Pull model:
 - Jika data produk sangat besar, Subscriber hanya akan mengambil bagian yang mereka butuhkan saja
